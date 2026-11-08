@@ -1,0 +1,3 @@
+initdb/*.sql
+initdb/*.sql.gz
+.DS_Store
