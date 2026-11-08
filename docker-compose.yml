@@ -1,24 +1,20 @@
 services:
-  db:
-    image: mariadb:10.3
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb-file-per-table=1
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: moodle
-      MYSQL_USER: moodle
-      MYSQL_PASSWORD: moodle
-    volumes:
-      - dbdata:/var/lib/mysql
-      # taruh dump Moodle (.sql) di ./initdb untuk auto-import saat pertama jalan
-      - ./initdb:/docker-entrypoint-initdb.d
   moodle:
     build: .
-    depends_on: [db]
-    ports: ["8080:80"]
-    environment:
-      WWWROOT: http://localhost:8080
+    env_file: .env
+    ports:
+      - "${APP_PORT:-8080}:80"
     volumes:
       # moodledata yang sudah ada (berisi filedir, dll)
-      - "../catdata 2:/var/www/moodledata"
-volumes:
-  dbdata:
+      - "${MOODLEDATA_PATH:-../catdata 2}:/var/www/moodledata"
+    networks:
+      - internal_network
+      - database_network
+    restart: unless-stopped
+
+networks:
+  database_network:
+    external: true
+    name: database_network
+  internal_network:
+    driver: bridge
